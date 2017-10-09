@@ -19,7 +19,8 @@ get_col_mean <- function(mat, col_num){
 	return(mean)
 }
 
-get_col_std_dev <- function(mat, col_num, col_mean){
+get_col_std_dev <- function(mat, col_num){
+	col_mean <- get_col_mean(mat, col_num)
 	std_dev <- 0.0
 	for(i in 1:nrow(mat)){
 		diff <- col_mean - mat[i, col_num]
@@ -51,10 +52,14 @@ analyse_table <- function(){
 		warning("Matrix has 0 rows, nothing to do")
 		return(NA)
 	}
+	# get means and display them
 	for(j in 1:ncol(mat)){
 		mean = get_col_mean(mat, j)
 		print_col_mean(j, mean);
-		std_dev = get_col_std_dev(mat, j, mean)
+	}
+	# get std devs and display them
+	for(j in 1:ncol(mat)){
+		std_dev = get_col_std_dev(mat, j)
 		print_col_std_dev(j, std_dev)
 	}
 	plot_table(mat)
