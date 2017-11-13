@@ -14,13 +14,11 @@ find_row_with_largest_column_value <- function(mat, index){
 }
 
 # Swaps two rows of a matrix.
-# Uses XOR swap algorithm to avoid temp variables.
-# https://en.wikipedia.org/wiki/XOR_swap_algorithm
 swap_matrix_rows <- function(mat, row_1, row_2){
 	for(i in 1:ncol(mat)){
-		mat[row_1, i] <- bitwXor(mat[row_1, i], mat[row_2, i]);
-		mat[row_2, i] <- bitwXor(mat[row_2, i], mat[row_1, i]);
-		mat[row_1, i] <- bitwXor(mat[row_1, i], mat[row_2, i]);
+		temp <- mat[row_2, i];
+		mat[row_2, i] <- mat[row_1, i];
+		mat[row_1, i] <- temp;
 	}
 	return(mat);
 }
@@ -47,6 +45,18 @@ create_pivot_matrix <- function(n){
 	return(mat);
 }
 
+# Fills a square matrix's diagonal with 1s.
+insert_1_into_diagonal <- function(mat, n){
+	i <- 1;
+	j <- 1;
+	while(i <= n){
+		mat[i, j] <- 1;
+		i <- i + 1;
+		j <- j + 1;
+	}
+	return(mat);
+}
+
 # TODO: comment and cleanup.
 # Highly WIP.
 lu_factorise <- function(mat, n){
@@ -54,37 +64,50 @@ lu_factorise <- function(mat, n){
 		error("Invalid matrix size.");
 		return(NA);
 	}
-	cat("=== STARTING ===\n");
-	cat("Original matrix looks like:\n");
-	print(mat);
-	cat("\n");
+	#cat("=== STARTING ===\n");
+	#cat("Original matrix looks like:\n");
+	#print(mat);
+	#cat("\n");
+	ratios <- matrix(0L, nrow=n, ncol=n)
 	pivot <- create_pivot_matrix(n);
 	for(i in 1:(n - 1)){
 		index = find_row_with_largest_column_value(mat, i);
-		cat(sprintf("Largest value in column %d after row %d is in row %d\n", i, i, index));
+		#cat(sprintf("Largest value in column %d after row %d is in row %d\n", i, i, index));
 		if(index != i){
-			cat(sprintf("Swapping %d and %d\n", i, index));
+			#cat(sprintf("Swapping %d and %d\n", i, index));
 			mat <- swap_matrix_rows(mat, index, i);
 			pivot <- swap_matrix_rows(pivot, index, i);
-			cat("After swap the matrix looks like:\n");
-			print(mat);
+			ratios <- swap_matrix_rows(ratios, index, i);
+			#cat("After swap the matrix looks like:\n");
+			#print(mat);
+			#cat("\n");
+			cat("After swap pivot looks like:\n");
+			print(pivot);
 			cat("\n");
 			for(j in (i + 1):n){
 				value <- mat[j, i];
 				larger_value <- mat[i, i];
-				cat(sprintf("Ratio is %f\n", value / larger_value));
+				#cat(sprintf("Ratio is %f\n", value / larger_value));
 				mat <- subtract_rows_with_ratio(mat, j, i, (value / larger_value));
-				cat("After subtract the matrix looks like:\n");
-				print(mat);
-				cat("\n");
+				ratios[j, i] <- (value / larger_value);
+				#cat("After subtract the matrix looks like:\n");
+				#print(mat);
+				#cat("\n");
+				#cat("Ratios are:\n");
+				#print(ratios);
+				#cat("\n");
 			}
-			
-			
-
 		} else {
-			cat(sprintf("Not doing anything for %d\n", i));
+			#cat(sprintf("Not doing anything for %d\n", i));
 		}
 	}
+	ratios <- insert_1_into_diagonal(ratios, n);
+	cat("U is:\n");
+	print(mat);
+	cat("\n");
+	cat("L is:\n");
+	print(ratios);
+	cat("\n");
 }
 
 # Takes n and returns a nxn matrix filled with values 1:(n*n)
