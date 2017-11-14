@@ -59,6 +59,7 @@ insert_1_into_diagonal <- function(mat, n){
 
 # TODO: comment and cleanup.
 # Highly WIP.
+# Returns a list that contains L, U and the pivot matrix in that order.
 lu_factorise <- function(mat, n){
 	if(n == 0 || n > 99){
 		error("Invalid matrix size.");
@@ -81,9 +82,6 @@ lu_factorise <- function(mat, n){
 			#cat("After swap the matrix looks like:\n");
 			#print(mat);
 			#cat("\n");
-			cat("After swap pivot looks like:\n");
-			print(pivot);
-			cat("\n");
 			for(j in (i + 1):n){
 				value <- mat[j, i];
 				larger_value <- mat[i, i];
@@ -102,19 +100,56 @@ lu_factorise <- function(mat, n){
 		}
 	}
 	ratios <- insert_1_into_diagonal(ratios, n);
-	cat("U is:\n");
-	print(mat);
-	cat("\n");
-	cat("L is:\n");
-	print(ratios);
-	cat("\n");
+	#cat("U is:\n");
+	#print(mat);
+	#cat("\n");
+	#cat("L is:\n");
+	#print(ratios);
+	#cat("\n");
+	return(list(ratios, mat, pivot));
 }
 
-# Takes n and returns a nxn matrix filled with values 1:(n*n)
-# Just a helper function for testing
-getmatrix <- function(n){
+solve_for_c <- function(l, pivot_mat, b, n){
+	c <- vector(length=n);
+	b_pivot <- pivot_mat %*% b;
+	#print(b_pivot);
+	# Handle first c value outside of loop.
+	# This is trivial to solve as only the first element in the first row 
+	# of L has a non-zero value and it will always be 1.
+	c[1] <- b_pivot[1];
+	for(i in 2:n){
+		temp <- 0;
+		for(j in 1:(i-1)){
+			temp <- temp + (c[j] * l[i, j]);
+			#cat(sprintf("i: %d, j: %d, c[j]: %f, l[i, j]: %f, temp: %f, b_pivot[i]: %f\n", i, j, c[j], l[i,j], temp, b_pivot[i]));	
+		}
+		c[i] <- b_pivot[i] - temp;
+	}
+	return(c);
+}
+
+# mat should be a nxn matrix.
+# n should be >0 and <= 99.
+# b should be a vector of length n.
+solve_system <- function(mat, n, b){
+	result <- lu_factorise(mat, n);
+	l_mat <- result[[1]];
+	u_mat <- result[[2]];
+	pivot_mat <- result[[3]];
+	c <- solve_for_c(l_mat, pivot_mat, b, n);
+	return(c);
+}
+
+# Crappy functions for testing.
+
+getb <- function(){
+	b <- c(5, 0, 6);
+	return(b);
+}
+
+getmatrix <- function(){
 	v <- c(2, 4, 1, 1, 4, 3, 5, -4, 1);
-	mat <- matrix(v, ncol=n, nrow=n)
+	mat <- matrix(v, ncol=3, nrow=3)
 	return(mat)
 }
 
