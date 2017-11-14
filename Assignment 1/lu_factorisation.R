@@ -1,3 +1,7 @@
+# Tolerance for floating point operations.
+# If the operation results in a value smaller than this then we instead use 0.
+TOLERANCE <- 0.0000001;
+
 # Takes a NxN matrix and a starting row/column number 'index'. 
 # Returns the number of the row with the largest value in the specified column, 
 # where the row is either (TODO: confirm ?) the starting row or after it.
@@ -26,7 +30,12 @@ swap_matrix_rows <- function(mat, row_1, row_2){
 # Note: ratio is applied to row_2 row.
 subtract_rows_with_ratio <- function(mat, row_1, row_2, ratio){
 	for(i in 1:ncol(mat)){
-		mat[row_1, i] <- mat[row_1, i] - (ratio * mat[row_2, i]);
+		val <- mat[row_1, i] - (ratio * mat[row_2, i]);
+		if(abs(val) < TOLERANCE){
+			mat[row_1, i] <- 0;
+		} else {
+			mat[row_1, i] <- val;
+		}
 	}
 	return(mat);
 }
@@ -75,28 +84,28 @@ lu_factorise <- function(mat, n){
 		index = find_row_with_largest_column_value(mat, i);
 		#cat(sprintf("Largest value in column %d after row %d is in row %d\n", i, i, index));
 		if(index != i){
-			#cat(sprintf("Swapping %d and %d\n", i, index));
+			cat(sprintf("Swapping %d and %d\n", i, index));
 			mat <- swap_matrix_rows(mat, index, i);
 			pivot <- swap_matrix_rows(pivot, index, i);
 			ratios <- swap_matrix_rows(ratios, index, i);
 			#cat("After swap the matrix looks like:\n");
 			#print(mat);
 			#cat("\n");
-			for(j in (i + 1):n){
-				value <- mat[j, i];
-				larger_value <- mat[i, i];
-				#cat(sprintf("Ratio is %f\n", value / larger_value));
-				mat <- subtract_rows_with_ratio(mat, j, i, (value / larger_value));
-				ratios[j, i] <- (value / larger_value);
-				#cat("After subtract the matrix looks like:\n");
-				#print(mat);
-				#cat("\n");
-				#cat("Ratios are:\n");
-				#print(ratios);
-				#cat("\n");
-			}
 		} else {
-			#cat(sprintf("Not doing anything for %d\n", i));
+			#cat(sprintf("Not swapping for %d\n", i));
+		}
+		for(j in (i + 1):n){
+			value <- mat[j, i];
+			larger_value <- mat[i, i];
+			#cat(sprintf("Ratio is %f\n", value / larger_value));
+			mat <- subtract_rows_with_ratio(mat, j, i, (value / larger_value));
+			ratios[j, i] <- (value / larger_value);
+			#cat("After subtract the matrix looks like:\n");
+			#print(mat);
+			#cat("\n");
+			#cat("Ratios are:\n");
+			#print(ratios);
+			#cat("\n");
 		}
 	}
 	ratios <- insert_1_into_diagonal(ratios, n);
@@ -128,6 +137,28 @@ solve_for_c <- function(l, pivot_mat, b, n){
 	return(c);
 }
 
+solve_for_x <- function(u, c, n){
+	x <- vector(length=n);
+	# Handle first x value outside of loop.
+	# This is trivial to solve as only the last element in the last row 
+	# of U has a non-zero value.
+	x[n] = c[n] / u[n,n];
+	for(i in (n-1):1){
+		temp <- 0;
+		for(j in n:2){
+			temp <- temp + (u[i, j] * x[j]);	
+		}
+		temp <- (c[i] - temp) / u[i,i];
+		if(abs(temp) < TOLERANCE){
+			x[i] <- 0;
+		} else {
+			x[i] <- temp;
+		}
+
+	}
+	return(x);
+}
+
 # mat should be a nxn matrix.
 # n should be >0 and <= 99.
 # b should be a vector of length n.
@@ -137,19 +168,22 @@ solve_system <- function(mat, n, b){
 	u_mat <- result[[2]];
 	pivot_mat <- result[[3]];
 	c <- solve_for_c(l_mat, pivot_mat, b, n);
-	return(c);
+	x <- solve_for_x(u_mat, c, n);
+	return(x);
 }
 
 # Crappy functions for testing.
 
 getb <- function(){
-	b <- c(5, 0, 6);
+	#b <- c(5, 0, 6);
+	b <- c(35, 58, 53, 37, 39);
 	return(b);
 }
 
-getmatrix <- function(){
-	v <- c(2, 4, 1, 1, 4, 3, 5, -4, 1);
-	mat <- matrix(v, ncol=3, nrow=3)
+getmatrix <- function(n){
+	#v <- c(2, 4, 1, 1, 4, 3, 5, -4, 1);
+	v <- c(9, 7, 2, 0, 7, 3, 6, 7, 9, 3, 2, 9, 7, 7, 6, 0, 6, 8, 2, 4, 7, 4, 2, 2, 3);
+	mat <- matrix(v, ncol=n, nrow=n)
 	return(mat)
 }
 
