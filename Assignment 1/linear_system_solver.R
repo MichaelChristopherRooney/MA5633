@@ -2,6 +2,10 @@
 # If the operation results in a value smaller than this then we instead use 0.
 TOLERANCE <- 0.0000001;
 
+##############################################################
+# Helper functions for the LU factorisation with partial pivoting
+##############################################################
+
 # Takes a NxN matrix and a starting row/column number 'index'. 
 # Returns the number of the row with the largest absolute value in the specified column, 
 # where the row is either the starting row or after it.
@@ -88,6 +92,10 @@ lu_factorise <- function(mat, n){
 	return(list(ratios, mat, pivot));
 }
 
+##############################################################
+# Functions for solving the system
+##############################################################
+
 solve_for_c <- function(l, pivot_mat, b, n){
 	c <- vector(length=n);
 	b_pivot <- pivot_mat %*% b;
@@ -162,7 +170,9 @@ solve_system <- function(mat, n, b){
 	print_results(mat, b, u_mat, l_mat, pivot_mat, c, x);
 }
 
+##############################################################
 # Functions for generating A and b for each part of question 3.
+##############################################################
 
 gen_matrix_part_a <- function(){
 	v <- c(9, 7, 2, 0, 7, 3, 6, 7, 9, 3, 2, 9, 7, 7, 6, 0, 6, 8, 2, 4, 7, 4, 2, 2, 3);
@@ -230,6 +240,4 @@ run_all_parts <- function(){
 	b <- gen_b_part_c();
 	solve_system(mat, 5, b);
 }
-
-
 

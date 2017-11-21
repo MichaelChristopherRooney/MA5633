@@ -1,7 +1,4 @@
-# TODO: cleanup (= / <-)
-# TODO: use better operations as described in slides
-# TODO: better saving to file
-# TODO: check if initial value is root
+# 
 
 # Global limits for each of the root finding functions
 TOLERANCE <- 0.000001; # 10^-6
@@ -16,14 +13,19 @@ func_b <- function(x){
 	return(exp(x) - 2);
 }
 
-# differentiated version of func b
+# Differentiated version of func b for use in Newton's method code
 func_b_diff <- function(x){
 	#exp(x) is R's way of doing e^x
 	return(exp(x));
 }
 
-# n xn (bn-1 - an-1) an bn
 find_roots_bisection <- function(func, a, b, filename) {
+	if(abs(func(a)) < TOLERANCE){
+		return(a);
+	}
+	if(abs(func(b)) < TOLERANCE){
+		return(b);
+	}
 	n <- 1;
 	old_a <- 0;
 	old_b <- 0;
@@ -31,16 +33,17 @@ find_roots_bisection <- function(func, a, b, filename) {
 	results <- c("n", "xn", "(bn-1 - an-1)", "an", "bn");
 	write(results, filename, ncolumns=5, append=FALSE, sep=" ");
 	while(n < N_MAX){
-		c <- (a + b) / 2; # replace with operation in lecture slides
+		c <- (a + ((b-a)/2));
 		results <- c(n, c, old_b - old_a, a, b);
 		write(results, filename, ncolumns=5, append=TRUE, sep=" ");
-		# TODO: cache func(c) return value
-		if(func(c) == 0 || ((b - a) / 2) < TOLERANCE){
+		fc <- func(c);
+		fa <- func(a);
+		if(fc == 0 || ((b - a) / 2) < TOLERANCE){
 			return(c);
 		}
-		old_a = a;
-		old_b = b;
-		if(func(c) * func(a) < 0){
+		old_a <- a;
+		old_b <- b;
+		if(fc * fa < 0){
 			b <- c;
 		} else {
 			a <- c;
@@ -53,41 +56,46 @@ find_roots_bisection <- function(func, a, b, filename) {
 }
 
 find_roots_newton <- function(func, func_diff, x, filename){
+	if(abs(func(x)) < TOLERANCE){
+		return(x);
+	}
 	n <- 1;
 	x_next <- 0;
-	actual_root = log(2);
+	actual_root <- log(2);
 	results <- c("n", "xn", "α - xn", "log10(α - xn)");
 	write(results, filename, ncolumns=4, append=FALSE, sep=" ");
 	while(n < N_MAX){
-		y = func(x);
-		y_prime = func_diff(x);
-		x_next = x - (y / y_prime);
+		y <- func(x);
+		y_prime <- func_diff(x);
+		x_next <- x - (y / y_prime);
 		results <- c(n, x_next, actual_root - x_next, log10(abs(actual_root - x_next)));
 		write(results, filename, ncolumns=4, append=TRUE, sep=" ");
 		if(abs(x - x_next) < TOLERANCE){
 			return(x_next);
 		}
-		x = x_next;
+		x <- x_next;
 		n <- n + 1;
 	}
 }
 
 find_roots_secant <- function(func, a, b, filename){
 	n <- 1;
-	actual_root = log(2);
+	actual_root <- log(2);
 	results <- c("n", "xn", "α - xn");
 	write(results, filename, ncolumns=3, append=FALSE, sep=" ");
 	while(n < N_MAX){
-		temp = (b - a)/(func(b) - func(a));
-		temp = temp * func(b);
-		a = b;
-		b = b - temp;
+		fa <- func(a);
+		fb <- func(b);
+		temp <- (b - a)/(fb - fa);
+		temp <- temp * fb;
+		a <- b;
+		b <- b - temp;
 		results <- c(n, b, actual_root - b);
 		write(results, filename, ncolumns=3, append=TRUE, sep=" ");
 		if(abs(b - a) < TOLERANCE){
 			return(b);
 		}
-		n = n + 1;
+		n <- n + 1;
 	}
 	return(b);
 }
