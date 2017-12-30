@@ -53,6 +53,20 @@ trapezoid_predictor_corrector <- function(dy_dx = function(x, y){}, initial_val,
 	return(y_next);
 }
 
+runge_kutta_2nd_order <- function(dy_dx = function(x, y){}, initial_val, step_size, start, end){
+	num_steps <- (end - start) / step_size;
+	half_step_size = step_size / 2;
+	y <- initial_val;
+	t <- start;
+	for(i in 1:num_steps){
+		k1 <- dy_dx(t, y);
+		k2 <- dy_dx(t + step_size, y + (step_size * k1));
+		y <- y + (0.5 * step_size * k1) + (0.5 * step_size * k2);
+		t <- t + (i * step_size);
+	}
+	return(y);
+}
+
 runge_kutta_4th_order <- function(dy_dx = function(x, y){}, initial_val, step_size, start, end){
 	num_steps <- (end - start) / step_size;
 	half_step_size = step_size / 2;
@@ -103,12 +117,13 @@ run_trapezoid_with_grids <- function(dy_dx = function(x, y){}, initial_val, outp
 # TODO: write out En part
 # TODO: second order Runge-Kutta
 run_runge_kutta_with_grids <- function(dy_dx = function(x, y){}, initial_val, output_file){
-	results <- c("n=h^-1", "yn(t=1)");
-	write(results, output_file, ncolumns=2, append=FALSE, sep="\t");
+	results <- c("n=h^-1", "RK2yn(t=1)", "RK4yn(t=1)");
+	write(results, output_file, ncolumns=3, append=FALSE, sep="\t");
 	for(i in 1:num_grid_sizes){
-		ys <- runge_kutta_4th_order(dy_dx, initial_val, 1 / grid_sizes_inverted[i], 0, 1);
-		results <- c(grid_sizes_inverted[i], ys);
-		write(results, output_file, ncolumns=2, append=TRUE, sep="\t");
+		y_2 <- runge_kutta_2nd_order(dy_dx, initial_val, 1 / grid_sizes_inverted[i], 0, 1);
+		y_4 <- runge_kutta_4th_order(dy_dx, initial_val, 1 / grid_sizes_inverted[i], 0, 1);
+		results <- c(grid_sizes_inverted[i], y_2, y_4);
+		write(results, output_file, ncolumns=3, append=TRUE, sep="\t");
 	}
 }
 
