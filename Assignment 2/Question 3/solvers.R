@@ -1,5 +1,5 @@
 # TODO:
-# analytical result for y_ii
+# scan pages with analytic results and include in report
 # double check t order in solvers
 
 #########################################################
@@ -25,6 +25,13 @@ dy_dt_iii <- function(t, y){
 # y = 0.5^e^-t
 y_i_analytical <- function(t, y){
 	return((0.5)^(exp(1)^-t))
+}
+
+y_ii_analytical <- function(t, y){
+	temp <- (exp(1) ^ ((-4) * t));
+	temp <- temp + 1;
+	temp <- temp / 4;
+	return(temp);
 }
 
 # y = e^t
@@ -157,7 +164,7 @@ run_runge_kutta_with_grids <- function(dy_dt = function(t, y){}, y_func = functi
 
 do_work <- function(){
 	run_euler_with_grids(dy_dt_i, y_i_analytical, 0.5, "forward_i.txt");
-	#run_euler_with_grids(dy_dt_ii, 1, "forward_ii.txt");
+	run_euler_with_grids(dy_dt_ii, y_ii_analytical, 1, "forward_ii.txt");
 	run_euler_with_grids(dy_dt_iii, y_iii_analytical, 1, "forward_iii.txt");
 	run_trapezoid_with_grids(dy_dt_i, y_i_analytical, 0.5, "implicit.txt");
 	run_runge_kutta_with_grids(dy_dt_i, y_i_analytical, 0.5, "rungekutta.txt");
