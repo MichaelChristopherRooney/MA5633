@@ -50,7 +50,6 @@ gen_guess_matrix <- function(n){
 }
 
 # Algorithm taken from https://en.wikipedia.org/wiki/Jacobi_method#Algorithm
-# TODO: use tolerance
 jacobi_solver <- function(b_mat, max_iter, tol, len){
 	guess_mat <- gen_guess_matrix(len);
 	guess_mat_next <- gen_guess_matrix(len);
@@ -64,15 +63,21 @@ jacobi_solver <- function(b_mat, max_iter, tol, len){
 			}	
 			guess_mat_next[i, 1] = (1 / get_value_from_a(i, i)) * (b_mat[i] - sigma);
 		}
+		# Check tolerance
+		err1 <- abs(max(guess_mat - guess_mat_next));
+		err2 <- err1 / abs(max(guess_mat_next));
+		if(err2 < tol){
+			return(guess_mat);
+		}
 		guess_mat <- guess_mat_next;
 	}
 	return(guess_mat);
 }
 
 # Algorithm taken from https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method#Algorithm
-# TODO: use tolerance
 gauss_seidel_solver <- function(b_mat, max_iter, tol, len){
 	result <- gen_guess_matrix(len);
+	prev <- result; # used for tolerance calculation
 	for(iter in 1:max_iter){
 		for(i in 1:len){
 			sigma <- 0;
@@ -81,8 +86,15 @@ gauss_seidel_solver <- function(b_mat, max_iter, tol, len){
 					sigma <- sigma + (get_value_from_a(i, j) * result[j, 1]);
 				}
 			}
-			result[i, 1] <- (1 / get_value_from_a(i, i)) * (b[i] - sigma);
+			result[i, 1] <- (1 / get_value_from_a(i, i)) * (b_mat[i] - sigma);
+			# Check tolerance
+			err1 <- abs(max(prev - result));
+			err2 <- err1 / abs(max(prev));
+			if(err2 < tol){
+				return(result);
+			}
 		}
+		prev <- result;
 	}
 	return(result);
 }
@@ -90,10 +102,13 @@ gauss_seidel_solver <- function(b_mat, max_iter, tol, len){
 do_work <- function(){
 	a_mat <- gen_a_matrix();
 	b_mat <- gen_b_matrix();
-	result <- jacobi_solver(b_mat, 100, 0.01, 16);
+	max_its <- 150;
+	tol <- 0.00000001;
+	len <- ncol(a_mat);
+	result <- jacobi_solver(b_mat, max_its, tol, len);
 	cat("Result using Jacobi solver is:\n");
 	print(result);
-	result <- gauss_seidel_solver(b_mat, 100, 0.01, 16);
+	result <- gauss_seidel_solver(b_mat, max_its, tol, len);
 	cat("Result using Gauss-Seidel solver is:\n");
 	print(result);
 	cat("Result using R's built in solve function is:\n");

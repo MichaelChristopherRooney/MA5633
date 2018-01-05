@@ -78,16 +78,33 @@ estimate_condition_number <- function(mat, n){
 	return((inf_norm * v));
 }
 
+plot_data <- function(an_est, an_actual, hn_est, hn_actual){
+	indices <- rep(4:20);
+	title <- "Estimated (black) and actual (red)\n condition number vs N";
+	plot(y = an_est, x = indices, type="l", col="black", ylim=c(0, 20), ylab="Condition number", xlab="N", main = title);
+	lines(y = an_actual, x = indices, col="red");
+	dev.copy(jpeg,"an_mat.jpg");
+	dev.off();
+	plot(y = hn_est, x = indices, type="l", col="black", ylab="Condition number (log scale)", xlab="N", log="y", main = title);
+	lines(y = hn_actual, x = indices, col="red");
+	dev.copy(jpeg,"hn_mat.jpg");
+	dev.off();
+}
+
 do_work <- function(){
+	an_est <- c(length=16);
+	an_actual <- c(length=16);
+	hn_est <- c(length=16);
+	hn_actual <- c(length=16);
 	for(n in 4:20){
-		cat(sprintf("i = %d\n", n));
+		index <- n - 3;
 		mat <- gen_an_matrix(n);
-		est <- estimate_condition_number(mat, n)
-		actual <- 1 / rcond(mat, "I");
-		cat(sprintf("An matrix: estimate=%f, actual=%f\n", est, actual));
+		an_est[index] <- estimate_condition_number(mat, n)
+		an_actual[index] <- 1 / rcond(mat, "I");
 		mat <- gen_hn_matrix(n);
-		est <- estimate_condition_number(mat, n)
-		actual <- 1 / rcond(mat, "I");
-		cat(sprintf("Hn matrix: estimate=%f, actual=%f\n", est, actual));
+		hn_est[index] <- estimate_condition_number(mat, n)
+		hn_actual[index] <- 1 / rcond(mat, "I");
 	}
+	plot_data(an_est, an_actual, hn_est, hn_actual);
+
 }
