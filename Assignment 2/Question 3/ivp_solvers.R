@@ -1,6 +1,3 @@
-# TODO:
-# scan pages with analytic results and include in report
-
 #########################################################
 ## Derivatives as described in question 3
 #########################################################
@@ -26,8 +23,9 @@ y_i_analytical <- function(t){
 	return((0.5)^(exp(1)^-t))
 }
 
+# y = (1 + 3*(e^-4t)) / 4
 y_ii_analytical <- function(t){
-	temp <- (exp(1) ^ ((-4) * t));
+	temp <- (exp(1) ^ ((-4) * t)) * 3;
 	temp <- temp + 1;
 	temp <- temp / 4;
 	return(temp);
@@ -40,6 +38,7 @@ y_iii_analytical <- function(t){
 
 #########################################################
 ## Solver functions
+## Note: these return a list that contains y(t) and the maximum error
 #########################################################
 
 # Returns the last y value and the maximum error.
@@ -61,7 +60,6 @@ euler_forward <- function(dy_dt = function(t, y){}, y_func = function(t){}, init
 	return(list(y_next, max_err));
 }
 
-# Returns the last y value and the maximum error.
 trapezoid_predictor_corrector <- function(dy_dt = function(t, y){}, y_func = function(t){}, initial_val, step_size, start, end){
 	num_steps <- (end - start) / step_size;
 	y_prev <- initial_val;
@@ -176,7 +174,6 @@ plot_runge_kutta <- function(){
 	intial_val_rk4 <- 0.5;
 	rk2_results = c(length=4);
 	rk4_results = c(length=4);
-	#actual_results = c(length=4);
 	for(i in 1:num_its){
 		start_t <- (i-1)*step_size; # i-1 so we start from 0
 		end_t <- i*step_size;

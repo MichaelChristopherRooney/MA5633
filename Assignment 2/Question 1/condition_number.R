@@ -43,7 +43,6 @@ get_initial_guess <- function(n){
 	mat <- matrix(ncol=1, nrow=n)
 	for(i in 1:n){
 		mat[i, 1] = runif(1, 0.01, 0.02);
-		#mat[i, 1] = 0.1;
 	}
 	return(mat);
 }
@@ -62,7 +61,7 @@ calculate_infinity_norm <- function(mat){
 	return(max);
 }
 
-# TODO: comment here
+# See report for details on how this works.
 estimate_condition_number <- function(mat, n){
 	# Result is a list that contains L, U and pivot in that order
 	# This won't change and WON'T be recalculated later
